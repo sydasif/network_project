@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "network-project"
+version = "0.1.0"
+description = "Nornir – Network Automation for Cisco Devices"
+authors = ["Syed Asif <sydasif78@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = "^5.2.1"
+nornir = "==3.5.0"
+nornir-netmiko = "==1.0.1"
+netmiko = "==4.5.0"
+colorama = "==0.4.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
