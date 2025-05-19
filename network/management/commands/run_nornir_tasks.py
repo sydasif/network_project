@@ -1,7 +1,8 @@
 from django.core.management.base import BaseCommand
+
 from core.nornir_init import init_nornir
-from core.tasks import show_ip_interface_brief, save_running_config
-from network_core.models import TaskLog
+from core.tasks import save_running_config, show_ip_interface_brief
+from network.models import TaskLog
 
 
 class Command(BaseCommand):
@@ -18,6 +19,6 @@ class Command(BaseCommand):
                         device_name=host,
                         task_name=task_func.__name__,
                         command=r.name,
-                        output=r.result
+                        output=r.result,
                     )
                     print(f"{host} => {r.name}:\n{r.result}\n")
