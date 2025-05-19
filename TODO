@@ -1,0 +1,59 @@
+### 1. **Device Inventory Details**
+
+  ```yaml
+  r1:
+    hostname: 192.168.158.223
+    platform: ios
+    username: admin
+    password: cisco
+   sw1:
+    hostname: 192.168.158.220
+    platform: ios
+    username: admin
+    password: cisco
+  ```
+
+---
+
+### 2. **Decide Inventory Source**
+
+  * Static YAML files (easiest to start)
+
+### 3. **Task(s) to Run**
+
+* Commands I'd like to test first via Nornir:
+
+  * Example:
+
+    * `show ip interface brief`
+    * Save running config (`copy run start`)
+
+---
+
+### 4. **Log Output Preferences**
+
+* results should  go?
+
+  * console print and save to Django model (`TaskLog`)?
+---
+
+### 5. **GitHub Repo Access**
+
+* just work locally and push later
+
+---
+
+## ⚙️ Tools Setup Confirmation
+
+* Poetry is working (`poetry shell`)
+* Django is initialized
+* can run: `python manage.py runserver`
+
+---
+
+help me generate:
+
+* Django models
+* Inventory logic for Nornir
+* A sample task file
+* Logging function (DB or file)

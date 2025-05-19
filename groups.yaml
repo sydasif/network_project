@@ -1,0 +1,8 @@
+---
+ios:
+  platform: ios
+  connection_options:
+    netmiko:
+      platform: cisco_ios
+      extras:
+        timeout: 120
