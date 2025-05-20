@@ -1,14 +1,17 @@
 # core/tasks.py
 from nornir.core.task import Result, Task
+from nornir_netmiko.tasks import netmiko_send_command
 
 
 def show_ip(task: Task) -> Result:
-    output = task.run(task=task.run, name="Show IP", command="show ip interface brief")
-    return Result(host=task.host, result=output[0].result)
+    result = task.run(
+        task=netmiko_send_command, command_string="show ip interface brief"
+    )
+    return Result(host=task.host, result=result.result)
 
 
 def save_config(task: Task) -> Result:
-    output = task.run(
-        task=task.run, name="Save Config", command="copy running-config startup-config"
+    result = task.run(
+        task=netmiko_send_command, command_string="copy running-config startup-config"
     )
-    return Result(host=task.host, result=output[0].result)
+    return Result(host=task.host, result=result.result)
