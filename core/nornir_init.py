@@ -7,7 +7,7 @@ from nornir.core.plugins.connections import ConnectionPluginRegister
 from nornir_netmiko.connections import Netmiko
 
 
-def load_inventory_from_yaml(file_path="device_config.yaml"):
+def load_inventory_from_yaml(file_path="hosts.yaml"):
     with open(file_path) as f:
         raw_inventory = yaml.safe_load(f)
 
@@ -43,7 +43,7 @@ def init_nornir():
         inventory={
             "plugin": "SimpleInventory",
             "options": {
-                "host_file": str(BASE_DIR / "device_config.yaml"),
+                "host_file": str(BASE_DIR / "hosts.yaml"),
                 "group_file": str(BASE_DIR / "groups.yaml"),
             },
         },
