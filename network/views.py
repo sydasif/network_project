@@ -1,6 +1,13 @@
 # views.py
+from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
 from nornir.core.filter import F  # Add this import
+
+
+def home_view(request):
+    """Render the home page with navigation links."""
+    return render(request, "home.html")
+
 
 from core.nornir_init import init_nornir  # Your Nornir loader
 from core.tasks import save_config, show_ip  # Your task handlers
@@ -68,5 +75,17 @@ def task_view(request):
     page_number = request.GET.get("page")
     tasklogs = paginator.get_page(page_number)
     return render(
-        request, "home.html", {"form": form, "tasklogs": tasklogs, "page_obj": tasklogs}
+        request,
+        "task_form.html",
+        {"form": form, "tasklogs": tasklogs, "page_obj": tasklogs},
+    )
+
+
+def execution_logs(request):
+    tasklogs_list = TaskLog.objects.all().order_by("-timestamp")
+    paginator = Paginator(tasklogs_list, 10)
+    page_number = request.GET.get("page")
+    tasklogs = paginator.get_page(page_number)
+    return render(
+        request, "execution_logs.html", {"tasklogs": tasklogs, "page_obj": tasklogs}
     )

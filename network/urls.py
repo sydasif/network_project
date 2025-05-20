@@ -1,8 +1,13 @@
 from django.urls import path
 
-from .views import task_view
+from . import views
 
 urlpatterns = [
-    path("", task_view, name="task_view"),  # Unified form endpoint
-    path("home/", task_view, name="home"),  # Dashboard landing page
+    path("", views.home_view, name="home"),  # Home page with navigation
+    path(
+        "network-task/", views.task_view, name="network_task"
+    ),  # Network configuration task
+    path(
+        "execution-logs/", views.execution_logs, name="execution_logs"
+    ),  # Task execution logs
 ]
