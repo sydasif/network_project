@@ -1,11 +1,8 @@
-# views.py
 from django.core.paginator import Paginator
 from django.shortcuts import render
-from nornir.core.filter import F  # Add this import
-
-from core.nornir_init import init_nornir  # Your Nornir loader
-from core.tasks import save_config, show_ip  # Your task handlers
-
+from nornir.core.filter import F
+from core.nornir_init import init_nornir
+from core.tasks import save_config, show_ip
 from .forms import TaskForm
 from .models import TaskLog
 
