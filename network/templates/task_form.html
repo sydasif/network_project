@@ -23,6 +23,12 @@
         tbody tr:nth-child(even) {
             background-color: #f9f9f9;
         }
+        .success {
+            color: green;
+        }
+        .failure {
+            color: red;
+        }
     </style>
 </head>
 <body>
@@ -32,6 +38,12 @@
         {{ form.as_p }}
         <button type="submit">Run Task</button>
     </form>
+
+    {% if error_message %}
+        <div style="color: red;">
+            <strong>Error:</strong> {{ error_message }}
+        </div>
+    {% endif %}
 
     <h2>Recent Logs</h2>
     <table style="width:100%;">
@@ -48,7 +60,7 @@
                 <tr>
                     <td>{{ log.device_name }}</td>
                     <td>{{ log.task_type }}</td>
-                    <td>{{ log.status }}</td>
+                    <td class="{% if log.status == 'success' %}success{% else %}failure{% endif %}">{{ log.status }}</td>
                     <td><pre>{{ log.output }}</pre></td>
                 </tr>
             {% empty %}

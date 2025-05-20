@@ -32,21 +32,30 @@ def task_view(request):
                 # Use full inventory if no devices are selected
                 subset = nr
 
-            result = subset.run(task=task_func)
+            try:
+                result = subset.run(task=task_func)
 
-            for host, task_result in result.items():
-                TaskLog.objects.create(
-                    device_name=host,
-                    task_type=task_type,
-                    output=(
-                        task_result.result
-                        if task_result.failed is False
-                        else str(task_result.exception)
-                    ),
-                    status="failure" if task_result.failed else "success",
+                for host, task_result in result.items():
+                    TaskLog.objects.create(
+                        device_name=host,
+                        task_type=task_type,
+                        output=(
+                            task_result.result
+                            if task_result.failed is False
+                            else str(task_result.exception)
+                        ),
+                        status="failure" if task_result.failed else "success",
+                    )
+
+                return redirect("task_view")
+            except Exception as e:
+                form = TaskForm(device_choices=device_choices)
+                logs = TaskLog.objects.order_by("-timestamp")[:10]
+                return render(
+                    request,
+                    "task_form.html",
+                    {"form": form, "logs": logs, "error_message": str(e)},
                 )
-
-            return redirect("task_view")
         else:
             pass  # Form is not valid, handle errors in template if needed
     else:
