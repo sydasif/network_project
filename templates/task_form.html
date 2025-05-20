@@ -15,11 +15,24 @@
         </button>
     </form>
 
-    {% if logs %}
+    {% if error_message %}
+    <div class="mt-4 alert alert-danger">
+        {{ error_message }}
+    </div>
+    {% endif %}
+
+    {% if execution_output %}
     <div class="mt-4 card">
-        <div class="card-header">Execution Logs</div>
+        <div class="card-header">Command Execution Output</div>
         <div class="card-body">
-            <pre class="bg-light p-3">{{ logs }}</pre>
+            {% for host, result in execution_output.items %}
+            <div class="mb-3">
+                <h5 class="{% if result.status == 'success' %}text-success{% else %}text-danger{% endif %}">
+                    {{ host }} ({{ result.status }})
+                </h5>
+                <pre class="bg-light p-3">{{ result.output }}</pre>
+            </div>
+            {% endfor %}
         </div>
     </div>
     {% endif %}
