@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Run Nornir Task</title>
+</head>
+<body>
+    <h1>Run Task on Devices</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Run Task</button>
+    </form>
+
+    <h2>Recent Logs</h2>
+    <ul>
+        {% for log in logs %}
+            <li><strong>{{ log.device_name }}</strong> ({{ log.task_type }}): {{ log.status }}<br>
+            <pre>{{ log.output }}</pre></li>
+        {% empty %}
+            <li>No logs found.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
