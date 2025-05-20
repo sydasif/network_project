@@ -1,12 +1,12 @@
 # views.py
 from django.shortcuts import redirect, render
+from nornir.core.filter import F  # Add this import
 
 from core.nornir_init import init_nornir  # Your Nornir loader
 from core.tasks import save_config, show_ip  # Your task handlers
 
 from .forms import TaskForm
 from .models import TaskLog
-from nornir.core.filter import F  # Add this import
 
 TASK_MAP = {
     "show_ip": show_ip,
@@ -61,5 +61,12 @@ def task_view(request):
     else:
         form = TaskForm(device_choices=device_choices)
 
-    logs = TaskLog.objects.order_by("-timestamp")[:10]
-    return render(request, "task_form.html", {"form": form, "logs": logs})
+    from django.core.paginator import Paginator
+
+    tasklogs_list = TaskLog.objects.all().order_by("-timestamp")
+    paginator = Paginator(tasklogs_list, 10)
+    page_number = request.GET.get("page")
+    tasklogs = paginator.get_page(page_number)
+    return render(
+        request, "home.html", {"form": form, "tasklogs": tasklogs, "page_obj": tasklogs}
+    )
