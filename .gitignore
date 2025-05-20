@@ -7,4 +7,5 @@ Pipfile.lock
 poetry.lock
 *.sqlite3
 .venv/
+.vscode/
 TODO.md
