@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Network Configuration Task</h2>
+    <form method="post" class="card p-4">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            {{ form.as_p }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Execute Configuration
+        </button>
+    </form>
+
+    {% if logs %}
+    <div class="mt-4 card">
+        <div class="card-header">Execution Logs</div>
+        <div class="card-body">
+            <pre class="bg-light p-3">{{ logs }}</pre>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
