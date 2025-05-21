@@ -4,6 +4,7 @@ from nornir.core.filter import F
 from core.nornir_init import init_nornir
 from core.tasks import save_config, show_ip
 from .forms import TaskForm
+from django.contrib.auth.decorators import login_required
 from .models import TaskLog
 
 
@@ -18,6 +19,7 @@ TASK_MAP = {
 }
 
 
+@login_required
 def task_view(request):
     nr = init_nornir()
     device_choices = [(h, h) for h in nr.inventory.hosts.keys()]
@@ -55,6 +57,7 @@ def task_view(request):
                         task_type=task_type,
                         output=output,
                         status=status,
+                        user=request.user,
                     )
             except Exception as e:
                 error_message = str(e)
@@ -74,8 +77,9 @@ def task_view(request):
     )
 
 
+@login_required
 def execution_logs(request):
-    tasklogs_list = TaskLog.objects.all().order_by("-timestamp")
+    tasklogs_list = TaskLog.objects.filter(user=request.user).order_by("-timestamp")
     paginator = Paginator(tasklogs_list, 10)
     page_number = request.GET.get("page")
     tasklogs = paginator.get_page(page_number)

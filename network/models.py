@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 # Create your models here.
@@ -21,6 +22,9 @@ class TaskLog(models.Model):
         max_length=20, choices=[("success", "Success"), ("failure", "Failure")]
     )
     timestamp = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="task_logs", null=True
+    )
 
     def __str__(self):
         return f"{self.device_name} - {self.task_type} - {self.status}"
