@@ -8,4 +8,5 @@ poetry.lock
 *.sqlite3
 .venv/
 .vscode/
-TODO.md
+to-do.md
+prompts.md
