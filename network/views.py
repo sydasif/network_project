@@ -9,6 +9,7 @@ from .forms import TaskForm
 from django.contrib.auth.decorators import login_required
 from .models import TaskLog, NetworkDevice, DeviceUptime
 from django.db.models import Max
+from django.db.models import Max
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +107,7 @@ def dashboard_view(request):
     Display the network automation dashboard with device status and recent tasks.
     """
     # Get base data
+    # Get base data
     devices = NetworkDevice.objects.all().order_by("name")
     recent_tasks = TaskLog.objects.all().order_by("-timestamp")[:10]
     device_uptimes = DeviceUptime.objects.all().order_by("-timestamp")
@@ -144,6 +146,11 @@ def dashboard_view(request):
         "devices": devices,
         "recent_tasks": recent_tasks,
         "device_uptimes": device_uptimes,
+        "device_count": device_count,
+        "task_success_rate": task_success_rate,
+        "task_failure_rate": task_failure_rate,
+        "average_uptime": average_uptime,
+        "last_backup_time": last_backup_time,
         "device_count": device_count,
         "task_success_rate": task_success_rate,
         "task_failure_rate": task_failure_rate,
