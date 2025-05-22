@@ -2,10 +2,10 @@ from django.core.paginator import Paginator
 from django.shortcuts import render
 from nornir.core.filter import F
 from core.nornir_init import init_nornir
-from core.tasks import save_config, show_ip
+from core.tasks import save_config, show_ip, get_device_uptime
 from .forms import TaskForm
 from django.contrib.auth.decorators import login_required
-from .models import TaskLog, NetworkDevice  # Import NetworkDevice
+from .models import TaskLog, NetworkDevice, DeviceUptime  # Import NetworkDevice
 
 
 def home_view(request):
@@ -16,6 +16,7 @@ def home_view(request):
 TASK_MAP = {
     "show_ip": show_ip,
     "save_config": save_config,
+    "get_device_uptime": get_device_uptime,
 }
 
 
@@ -66,6 +67,37 @@ def task_view(request):
     else:
         form = TaskForm(device_choices=device_choices)
 
+    task_type = request.POST.get("task_type") if request.method == "POST" else None
+
+    # Handle get_device_uptime separately as it doesn't have structured output
+    if task_type == "get_device_uptime":
+        try:
+            if selected_devices:
+                subset = nr.filter(F(name__in=selected_devices))
+            else:
+                subset = nr
+
+            result = subset.run(task=TASK_MAP[task_type])
+            execution_output = {}
+
+            for host, task_result in result.items():
+                output = (
+                    task_result.result
+                    if task_result.failed is False
+                    else str(task_result.exception)
+                )
+                status = "failure" if task_result.failed else "success"
+                execution_output[host] = {"output": output, "status": status}
+
+                TaskLog.objects.create(
+                    device_name=host,
+                    task_type=task_type,
+                    output=output,
+                    status=status,
+                    user=request.user,
+                )
+        except Exception as e:
+            error_message = str(e)
     return render(
         request,
         "task_form.html",
@@ -94,25 +126,58 @@ def dashboard_view(request):
     # Get device count
     device_count = NetworkDevice.objects.count()
 
-    # Get task status (success rate)
+    # Get task status (success rate and failed count)
     total_tasks = TaskLog.objects.filter(user=request.user).count()
     successful_tasks = TaskLog.objects.filter(
         user=request.user, status="success"
     ).count()
+    failed_tasks_count = TaskLog.objects.filter(
+        user=request.user, status="failure"
+    ).count()
     task_success_rate = (successful_tasks / total_tasks * 100) if total_tasks > 0 else 0
+    task_failure_rate = (
+        (failed_tasks_count / total_tasks * 100) if total_tasks > 0 else 0
+    )
 
-    # Get recent activity logs
-    recent_activity = TaskLog.objects.filter(user=request.user).order_by("-timestamp")[
-        :10
-    ]  # Get last 10 logs
+    # Get last successful backup time (assuming 'save_config' is the backup task)
+    last_backup_log = (
+        TaskLog.objects.filter(
+            user=request.user, task_type="save_config", status="success"
+        )
+        .order_by("-timestamp")
+        .first()
+    )
+    last_backup_time = last_backup_log.timestamp if last_backup_log else "N/A"
 
     context = {
         "device_count": device_count,
         "task_success_rate": round(task_success_rate, 2),  # Round to 2 decimal places
-        "recent_activity": recent_activity,
-        # Placeholders for Uptime and Last Backup as data is not directly available
+        "failed_tasks_count": failed_tasks_count,  # Keep count for now, might be useful
+        "task_failure_rate": round(task_failure_rate, 2),  # Round to 2 decimal places
+        # Placeholders for Uptime as data is not directly available
         "average_uptime": "N/A",
-        "last_backup": "N/A",
+        "last_backup_time": last_backup_time,
     }
+
+    # Calculate average uptime
+    total_uptime = 0
+    device_count_with_uptime = 0
+    for device in NetworkDevice.objects.all():
+        try:
+            last_uptime = (
+                DeviceUptime.objects.filter(device=device)
+                .order_by("-timestamp")
+                .first()
+            )
+            if last_uptime:
+                total_uptime += last_uptime.uptime_seconds
+                device_count_with_uptime += 1
+        except DeviceUptime.DoesNotExist:
+            pass
+
+    average_uptime = (
+        total_uptime / device_count_with_uptime if device_count_with_uptime else 0
+    )
+    context["average_uptime"] = round(average_uptime / (3600), 2)  # in hours
 
     return render(request, "dashboard.html", context)

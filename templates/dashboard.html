@@ -29,10 +29,21 @@
         </div>
     </div>
 
+    <!-- Failed Tasks Card -->
+    <div class="card flex items-center justify-between">
+        <div>
+            <div class="text-lg font-semibold text-gray-600">Failed Tasks Rate</div>
+            <div class="text-3xl font-bold text-gray-800">{{ task_failure_rate }}%</div>
+        </div>
+        <div class="text-red-500 text-4xl">
+            <i class="fas fa-times-circle"></i>
+        </div>
+    </div>
+
     <!-- Uptime Card -->
     <div class="card flex items-center justify-between">
         <div>
-            <div class="text-lg font-semibold text-gray-600">Average Uptime</div>
+            <div class="text-lg font-semibold text-gray-600">Average Uptime (Hours)</div>
             <div class="text-3xl font-bold text-gray-800">{{ average_uptime }}</div>
         </div>
         <div class="text-yellow-500 text-4xl">
@@ -44,7 +55,13 @@
     <div class="card flex items-center justify-between">
         <div>
             <div class="text-lg font-semibold text-gray-600">Last Backup</div>
-            <div class="text-xl font-bold text-gray-800">{{ last_backup }}</div>
+            <div class="text-xl font-bold text-gray-800">
+                {% if last_backup_time != 'N/A' %}
+                    {{ last_backup_time|date:"Y-m-d H:i" }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
         </div>
         <div class="text-red-500 text-4xl">
             <i class="fas fa-save"></i>
@@ -52,20 +69,4 @@
     </div>
 </div>
 
-<!-- Activity Feed -->
-<div class="card">
-    <h2 class="text-xl font-bold mb-4">Recent Activity</h2>
-    <ul class="divide-y divide-gray-200">
-        {% for log in recent_activity %}
-        <li class="py-4">
-            <div class="flex items-center">
-                <div class="text-gray-500 text-sm mr-4">[{{ log.timestamp|date:"Y-m-d H:i" }}]</div>
-                <div class="text-gray-800">Task "{{ log.task_type }}" on device "{{ log.device_name }}" completed with status "{{ log.status }}".</div>
-            </div>
-        </li>
-        {% empty %}
-        <li class="py-4 text-gray-500">No recent activity.</li>
-        {% endfor %}
-    </ul>
-</div>
 {% endblock %}

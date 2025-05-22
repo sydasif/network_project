@@ -28,3 +28,14 @@ class TaskLog(models.Model):
 
     def __str__(self):
         return f"{self.device_name} - {self.task_type} - {self.status}"
+
+
+class DeviceUptime(models.Model):
+    device = models.ForeignKey(
+        NetworkDevice, on_delete=models.CASCADE, related_name="uptime_records"
+    )
+    uptime_seconds = models.IntegerField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.device.name} - {self.uptime_seconds}s ({self.timestamp})"
