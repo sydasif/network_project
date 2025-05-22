@@ -14,3 +14,19 @@ sw1:
   password: cisco
   groups:
     - ios
+
+access1:
+  hostname: 192.168.158.221
+  platform: ios
+  username: admin
+  password: cisco
+  groups:
+    - ios
+
+access2:
+  hostname: 192.168.158.222
+  platform: ios
+  username: admin
+  password: cisco
+  groups:
+    - ios
