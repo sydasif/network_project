@@ -4,11 +4,10 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from nornir.core.filter import F
 from core.nornir_init import init_nornir
-from core.tasks import save_config, show_ip, get_device_uptime
+from core.tasks import save_config, show_ip
 from .forms import TaskForm
 from django.contrib.auth.decorators import login_required
-from .models import TaskLog, NetworkDevice, DeviceUptime
-from django.db.models import Max
+from .models import TaskLog, NetworkDevice
 from django.db.models import Max
 
 logger = logging.getLogger(__name__)
@@ -22,7 +21,6 @@ def home_view(request):
 TASK_MAP = {
     "show_ip": show_ip,
     "save_config": save_config,
-    "get_device_uptime": get_device_uptime,
 }
 
 
@@ -110,7 +108,6 @@ def dashboard_view(request):
     # Get base data
     devices = NetworkDevice.objects.all().order_by("name")
     recent_tasks = TaskLog.objects.all().order_by("-timestamp")[:10]
-    device_uptimes = DeviceUptime.objects.all().order_by("-timestamp")
 
     # Calculate device count
     device_count = devices.count()
@@ -123,16 +120,7 @@ def dashboard_view(request):
         task_failure_rate = round(100 - task_success_rate, 1)
     else:
         task_success_rate = 0
-        task_failure_rate = 0  # Calculate average uptime in hours
-    if device_uptimes.exists():
-        latest_uptimes = DeviceUptime.objects.values("device").annotate(
-            latest_uptime=Max("uptime_seconds")
-        )
-        total_uptime = sum(item["latest_uptime"] for item in latest_uptimes)
-        # Convert seconds to hours
-        average_uptime = round((total_uptime / len(latest_uptimes)) / 3600, 1)
-    else:
-        average_uptime = 0
+        task_failure_rate = 0
 
     # Get last backup time
     last_backup = (
@@ -145,16 +133,9 @@ def dashboard_view(request):
     context = {
         "devices": devices,
         "recent_tasks": recent_tasks,
-        "device_uptimes": device_uptimes,
         "device_count": device_count,
         "task_success_rate": task_success_rate,
         "task_failure_rate": task_failure_rate,
-        "average_uptime": average_uptime,
-        "last_backup_time": last_backup_time,
-        "device_count": device_count,
-        "task_success_rate": task_success_rate,
-        "task_failure_rate": task_failure_rate,
-        "average_uptime": average_uptime,
         "last_backup_time": last_backup_time,
     }
 

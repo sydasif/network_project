@@ -4,7 +4,6 @@ from django import forms
 TASK_CHOICES = [
     ("show_ip", "Show IP Interface Brief"),
     ("save_config", "Save Running Config"),
-    ("get_device_uptime", "Get Device Uptime"),
 ]
 
 
