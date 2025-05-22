@@ -1,16 +1,20 @@
+import logging
 from django.core.paginator import Paginator
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib import messages
 from nornir.core.filter import F
 from core.nornir_init import init_nornir
 from core.tasks import save_config, show_ip, get_device_uptime
 from .forms import TaskForm
 from django.contrib.auth.decorators import login_required
-from .models import TaskLog, NetworkDevice, DeviceUptime  # Import NetworkDevice
+from .models import TaskLog, NetworkDevice, DeviceUptime
+
+logger = logging.getLogger(__name__)
 
 
 def home_view(request):
     """Render the home page with navigation links."""
-    return render(request, "home.html")
+    return render(request, "home.html", {"request": request})
 
 
 TASK_MAP = {
@@ -18,6 +22,33 @@ TASK_MAP = {
     "save_config": save_config,
     "get_device_uptime": get_device_uptime,
 }
+
+
+def process_task_result(result, task_type, user):
+    """Helper function to process task results and create logs."""
+    execution_output = {}
+
+    for host, task_result in result.items():
+        output = (
+            task_result.result if not task_result.failed else str(task_result.exception)
+        )
+        status = "failure" if task_result.failed else "success"
+        execution_output[host] = {"output": output, "status": status}
+
+        TaskLog.objects.create(
+            device_name=host,
+            task_type=task_type,
+            output=output,
+            status=status,
+            user=user,
+        )
+
+        if task_result.failed:
+            logger.error(f"Task {task_type} failed on {host}: {task_result.exception}")
+        else:
+            logger.info(f"Task {task_type} successful on {host}")
+
+    return execution_output
 
 
 @login_required
@@ -34,70 +65,18 @@ def task_view(request):
             selected_devices = form.cleaned_data["devices"]
             task_func = TASK_MAP[task_type]
 
-            if selected_devices:
-                subset = nr.filter(F(name__in=selected_devices))
-            else:
-                subset = nr
-
             try:
+                subset = (
+                    nr.filter(F(name__in=selected_devices)) if selected_devices else nr
+                )
                 result = subset.run(task=task_func)
-                execution_output = {}
-
-                for host, task_result in result.items():
-                    output = (
-                        task_result.result
-                        if task_result.failed is False
-                        else str(task_result.exception)
-                    )
-                    status = "failure" if task_result.failed else "success"
-                    execution_output[host] = {"output": output, "status": status}
-
-                    # Still log the execution but don't display from DB
-                    TaskLog.objects.create(
-                        device_name=host,
-                        task_type=task_type,
-                        output=output,
-                        status=status,
-                        user=request.user,
-                    )
+                execution_output = process_task_result(result, task_type, request.user)
             except Exception as e:
                 error_message = str(e)
-        else:
-            pass  # Form is not valid, handle errors in template if needed
+                logger.exception(f"Error executing task {task_type}: {e}")
     else:
         form = TaskForm(device_choices=device_choices)
 
-    task_type = request.POST.get("task_type") if request.method == "POST" else None
-
-    # Handle get_device_uptime separately as it doesn't have structured output
-    if task_type == "get_device_uptime":
-        try:
-            if selected_devices:
-                subset = nr.filter(F(name__in=selected_devices))
-            else:
-                subset = nr
-
-            result = subset.run(task=TASK_MAP[task_type])
-            execution_output = {}
-
-            for host, task_result in result.items():
-                output = (
-                    task_result.result
-                    if task_result.failed is False
-                    else str(task_result.exception)
-                )
-                status = "failure" if task_result.failed else "success"
-                execution_output[host] = {"output": output, "status": status}
-
-                TaskLog.objects.create(
-                    device_name=host,
-                    task_type=task_type,
-                    output=output,
-                    status=status,
-                    user=request.user,
-                )
-        except Exception as e:
-            error_message = str(e)
     return render(
         request,
         "task_form.html",
@@ -122,62 +101,17 @@ def execution_logs(request):
 
 @login_required
 def dashboard_view(request):
-    """Render the dashboard page with data."""
-    # Get device count
-    device_count = NetworkDevice.objects.count()
-
-    # Get task status (success rate and failed count)
-    total_tasks = TaskLog.objects.filter(user=request.user).count()
-    successful_tasks = TaskLog.objects.filter(
-        user=request.user, status="success"
-    ).count()
-    failed_tasks_count = TaskLog.objects.filter(
-        user=request.user, status="failure"
-    ).count()
-    task_success_rate = (successful_tasks / total_tasks * 100) if total_tasks > 0 else 0
-    task_failure_rate = (
-        (failed_tasks_count / total_tasks * 100) if total_tasks > 0 else 0
-    )
-
-    # Get last successful backup time (assuming 'save_config' is the backup task)
-    last_backup_log = (
-        TaskLog.objects.filter(
-            user=request.user, task_type="save_config", status="success"
-        )
-        .order_by("-timestamp")
-        .first()
-    )
-    last_backup_time = last_backup_log.timestamp if last_backup_log else "N/A"
+    """
+    Display the network automation dashboard with device status and recent tasks.
+    """
+    devices = NetworkDevice.objects.all().order_by("name")
+    recent_tasks = TaskLog.objects.all().order_by("-timestamp")[:10]
+    device_uptimes = DeviceUptime.objects.all().order_by("-timestamp")
 
     context = {
-        "device_count": device_count,
-        "task_success_rate": round(task_success_rate, 2),  # Round to 2 decimal places
-        "failed_tasks_count": failed_tasks_count,  # Keep count for now, might be useful
-        "task_failure_rate": round(task_failure_rate, 2),  # Round to 2 decimal places
-        # Placeholders for Uptime as data is not directly available
-        "average_uptime": "N/A",
-        "last_backup_time": last_backup_time,
+        "devices": devices,
+        "recent_tasks": recent_tasks,
+        "device_uptimes": device_uptimes,
     }
-
-    # Calculate average uptime
-    total_uptime = 0
-    device_count_with_uptime = 0
-    for device in NetworkDevice.objects.all():
-        try:
-            last_uptime = (
-                DeviceUptime.objects.filter(device=device)
-                .order_by("-timestamp")
-                .first()
-            )
-            if last_uptime:
-                total_uptime += last_uptime.uptime_seconds
-                device_count_with_uptime += 1
-        except DeviceUptime.DoesNotExist:
-            pass
-
-    average_uptime = (
-        total_uptime / device_count_with_uptime if device_count_with_uptime else 0
-    )
-    context["average_uptime"] = round(average_uptime / (3600), 2)  # in hours
 
     return render(request, "dashboard.html", context)
