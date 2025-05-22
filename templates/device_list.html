@@ -10,31 +10,32 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Hostname <i class="fas fa-info-circle" title="Device hostname"></i></th>
-                    <th>IP <i class="fas fa-info-circle" title="Device IP address"></i></th>
-                    <th>Group <i class="fas fa-info-circle" title="Device group"></i></th>
-                    <th>Status <i class="fas fa-info-circle" title="Device status"></i></th>
-                    <th>Last Seen <i class="fas fa-info-circle" title="Last seen timestamp"></i></th>
+                    <th>Name <i class="fas fa-info-circle" title="Device name"></i></th>
+                    <th>Hostname (IP) <i class="fas fa-info-circle" title="Device IP address"></i></th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for device in devices %}
                 <tr>
+                    <td>{{ device.name }}</td>
                     <td>{{ device.hostname }}</td>
-                    <td>{{ device.ip }}</td>
-                    <td>{{ device.group }}</td>
-                    <td>{{ device.status }}</td>
-                    <td>{{ device.last_seen }}</td>
-                    <td>
-                        <button class="btn btn-primary btn-sm">Edit</button>
-                        <button class="btn btn-secondary btn-sm">Push Config</button>
-                        <button class="btn btn-danger btn-sm">Delete</button>
+                    <td class="space-x-2">
+                        <a href="{% url 'edit_device' device.id %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-sm">Edit</a>
+                        <form method="POST" action="{% url 'push_config' device.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-sm">Push Config</button>
+                        </form>
+                        <form method="POST" action="{% url 'delete_device' device.id %}" class="inline" onsubmit="return confirm('Are you sure you want to delete this device?');">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm">Delete</button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    {% include 'includes/pagination.html' with page_obj=page_obj %}
 </div>
 {% endblock %}

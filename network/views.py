@@ -1,14 +1,15 @@
 import logging
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
 from nornir.core.filter import F
 
 from core.nornir_init import init_nornir
 from core.tasks import save_config, show_ip
 
-from .forms import TaskForm
+from .forms import DeviceForm, TaskForm
 from .models import NetworkDevice, TaskLog
 
 logger = logging.getLogger(__name__)
@@ -153,3 +154,50 @@ def device_list_view(request):
     return render(
         request, "device_list.html", {"devices": device_list, "page_obj": device_list}
     )
+
+
+@login_required
+def edit_device(request, device_id):
+    device = get_object_or_404(NetworkDevice, id=device_id)
+    if request.method == "POST":
+        form = DeviceForm(request.POST, instance=device)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Device {device.hostname} updated successfully")
+            return redirect("device_list")
+    else:
+        form = DeviceForm(instance=device)
+    return render(request, "device_form.html", {"form": form, "device": device})
+
+
+@login_required
+def push_config(request, device_id):
+    if request.method == "POST":
+        device = get_object_or_404(NetworkDevice, id=device_id)
+        try:
+            nr = init_nornir()
+            result = nr.filter(name=device.hostname).run(task=save_config)
+            execution_output = process_task_result(result, "push_config", request.user)
+            if all(
+                output["status"] == "success" for output in execution_output.values()
+            ):
+                messages.success(
+                    request, f"Configuration pushed to {device.hostname} successfully"
+                )
+            else:
+                messages.error(
+                    request, f"Failed to push configuration to {device.hostname}"
+                )
+        except Exception as e:
+            messages.error(request, f"Error pushing configuration: {str(e)}")
+    return redirect("device_list")
+
+
+@login_required
+def delete_device(request, device_id):
+    device = get_object_or_404(NetworkDevice, id=device_id)
+    if request.method == "POST":
+        hostname = device.hostname
+        device.delete()
+        messages.success(request, f"Device {hostname} deleted successfully")
+    return redirect("device_list")
