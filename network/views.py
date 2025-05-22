@@ -171,29 +171,6 @@ def edit_device(request, device_id):
 
 
 @login_required
-def push_config(request, device_id):
-    if request.method == "POST":
-        device = get_object_or_404(NetworkDevice, id=device_id)
-        try:
-            nr = init_nornir()
-            result = nr.filter(name=device.hostname).run(task=save_config)
-            execution_output = process_task_result(result, "push_config", request.user)
-            if all(
-                output["status"] == "success" for output in execution_output.values()
-            ):
-                messages.success(
-                    request, f"Configuration pushed to {device.hostname} successfully"
-                )
-            else:
-                messages.error(
-                    request, f"Failed to push configuration to {device.hostname}"
-                )
-        except Exception as e:
-            messages.error(request, f"Error pushing configuration: {str(e)}")
-    return redirect("device_list")
-
-
-@login_required
 def delete_device(request, device_id):
     device = get_object_or_404(NetworkDevice, id=device_id)
     if request.method == "POST":

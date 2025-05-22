@@ -16,9 +16,6 @@ urlpatterns = [
         "devices/<int:device_id>/edit/", views.edit_device, name="edit_device"
     ),  # Edit device
     path(
-        "devices/<int:device_id>/push-config/", views.push_config, name="push_config"
-    ),  # Push config
-    path(
         "devices/<int:device_id>/delete/", views.delete_device, name="delete_device"
     ),  # Delete device
 ]
