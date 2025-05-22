@@ -32,6 +32,7 @@
             <div class="hidden lg:flex ml-auto items-center">
                 <a href="{% url 'network_task' %}" class="text-gray-600 hover:text-gray-800 px-4">Configuration Tasks</a>
                 <a href="{% url 'execution_logs' %}" class="text-gray-600 hover:text-gray-800 px-4">Execution Logs</a>
+                <a href="{% url 'dashboard' %}" class="text-gray-600 hover:text-gray-800 px-4">Dashboard</a>
                 {% if request.user.is_staff %}
                     <a href="/admin/" class="text-gray-600 hover:text-gray-800 px-4">Admin</a>
                 {% endif %}
@@ -51,6 +52,7 @@
             <a href="{% url 'home' %}" class="block py-2 text-lg font-semibold hover:text-gray-300">Home</a>
             <a href="{% url 'network_task' %}" class="block py-2 text-lg font-semibold hover:text-gray-300">Configuration Tasks</a>
             <a href="{% url 'execution_logs' %}" class="block py-2 text-lg font-semibold hover:text-gray-300">Execution Logs</a>
+            <a href="{% url 'dashboard' %}" class="block py-2 text-lg font-semibold hover:text-gray-300">Dashboard</a>
             {% if request.user.is_staff %}
                 <a href="/admin/" class="block py-2 text-lg font-semibold hover:text-gray-300">Admin</a>
             {% endif %}

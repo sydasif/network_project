@@ -5,7 +5,7 @@ from core.nornir_init import init_nornir
 from core.tasks import save_config, show_ip
 from .forms import TaskForm
 from django.contrib.auth.decorators import login_required
-from .models import TaskLog
+from .models import TaskLog, NetworkDevice  # Import NetworkDevice
 
 
 def home_view(request):
@@ -86,3 +86,33 @@ def execution_logs(request):
     return render(
         request, "execution_logs.html", {"tasklogs": tasklogs, "page_obj": tasklogs}
     )
+
+
+@login_required
+def dashboard_view(request):
+    """Render the dashboard page with data."""
+    # Get device count
+    device_count = NetworkDevice.objects.count()
+
+    # Get task status (success rate)
+    total_tasks = TaskLog.objects.filter(user=request.user).count()
+    successful_tasks = TaskLog.objects.filter(
+        user=request.user, status="success"
+    ).count()
+    task_success_rate = (successful_tasks / total_tasks * 100) if total_tasks > 0 else 0
+
+    # Get recent activity logs
+    recent_activity = TaskLog.objects.filter(user=request.user).order_by("-timestamp")[
+        :10
+    ]  # Get last 10 logs
+
+    context = {
+        "device_count": device_count,
+        "task_success_rate": round(task_success_rate, 2),  # Round to 2 decimal places
+        "recent_activity": recent_activity,
+        # Placeholders for Uptime and Last Backup as data is not directly available
+        "average_uptime": "N/A",
+        "last_backup": "N/A",
+    }
+
+    return render(request, "dashboard.html", context)

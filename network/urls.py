@@ -10,4 +10,5 @@ urlpatterns = [
     path(
         "execution-logs/", views.execution_logs, name="execution_logs"
     ),  # Task execution logs
+    path("dashboard/", views.dashboard_view, name="dashboard"),  # Network dashboard
 ]
