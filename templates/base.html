@@ -4,45 +4,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Network Automation Platform">
+    <meta name="keywords" content="network, automation, tailwindcss">
+    <meta name="author" content="Your Name">
+
     <title>{% block title %}Network Automation{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="icon" href="{% static 'favicon.ico' %}">
     {% block extra_css %}{% endblock %}
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">Network Automation</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'network_task' %}">Configuration Tasks</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'execution_logs' %}">Execution Logs</a>
-                    </li>
-                    {% if request.user.is_staff %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="/admin/">Admin</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
+<body class="bg-gray-100 font-sans antialiased">
 
-    <div class="container mt-4">
-        {% if user.is_authenticated %}
-            <p>Welcome, {{ user.username }}!
-                <form action="{% url 'logout' %}" method="post" style="display: inline;">
+    <!-- Header/Navbar -->
+    <header class="sticky top-0 bg-white shadow-md z-10">
+        <nav class="container mx-auto flex items-center py-4 px-6">
+            <a href="{% url 'home' %}" class="flex items-center text-2xl font-semibold text-gray-800">
+                <img src="{% static 'images/logo-icon.svg' %}" alt="Logo Icon" class="h-16 w-auto mr-2">
+                Network Automation
+            </a>
+            <button id="menu-toggle" class="lg:hidden ml-auto text-gray-600 hover:text-gray-800 focus:outline-none focus:text-gray-800">
+                <i class="fas fa-bars fa-lg"></i>
+            </button>
+            <div class="hidden lg:flex ml-auto items-center">
+                <a href="{% url 'network_task' %}" class="text-gray-600 hover:text-gray-800 px-4">Configuration Tasks</a>
+                <a href="{% url 'execution_logs' %}" class="text-gray-600 hover:text-gray-800 px-4">Execution Logs</a>
+                {% if request.user.is_staff %}
+                    <a href="/admin/" class="text-gray-600 hover:text-gray-800 px-4">Admin</a>
+                {% endif %}
+                {% if user.is_authenticated %}
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Logout</button>
+                    </form>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <!-- Mobile Sidebar -->
+    <div id="mobile-sidebar" class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-white z-20 transform -translate-x-full transition-transform duration-300 ease-in-out">
+        <div class="p-4">
+            <a href="{% url 'home' %}" class="block py-2 text-lg font-semibold hover:text-gray-300">Home</a>
+            <a href="{% url 'network_task' %}" class="block py-2 text-lg font-semibold hover:text-gray-300">Configuration Tasks</a>
+            <a href="{% url 'execution_logs' %}" class="block py-2 text-lg font-semibold hover:text-gray-300">Execution Logs</a>
+            {% if request.user.is_staff %}
+                <a href="/admin/" class="block py-2 text-lg font-semibold hover:text-gray-300">Admin</a>
+            {% endif %}
+            {% if user.is_authenticated %}
+                <form action="{% url 'logout' %}" method="post">
                     {% csrf_token %}
-                    <button type="submit" style="background: none; border: none; padding: 0; color: #007bff; cursor: pointer;">Logout</button>
+                    <button type="submit" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Logout</button>
                 </form>
-            </p>
-        {% endif %}
-        {% block content %}{% endblock %}
+            {% endif %}
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Main Content -->
+    <main class="container mx-auto py-8 px-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-4">
+        <div class="container mx-auto text-center">
+            &copy; {{ current_year }} Network Automation. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+
+        menuToggle.addEventListener('click', () => {
+            mobileSidebar.classList.toggle('transform');
+        });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
