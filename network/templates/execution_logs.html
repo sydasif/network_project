@@ -6,8 +6,7 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Timestamp</th>
-                    <th>Device</th>
+                    <th>Timestamp & Device</th>
                     <th>Task Type</th>
                     <th>Status</th>
                     <th>Output</th>
@@ -15,16 +14,22 @@
             </thead>
             <tbody>
                 {% for log in tasklogs %}
-                <tr>
-                    <td>{{ log.timestamp }}</td>
-                    <td>{{ log.device_name }}</td>
+                <tr class="log-row {% if log.status == 'success' %}status-success{% else %}status-failure{% endif %}">
+                    <td>
+                        <div class="log-timestamp">{{ log.timestamp }}</div>
+                        <div class="log-device">{{ log.device_name }}</div>
+                    </td>
                     <td>{{ log.task_type }}</td>
                     <td>
                         <span class="badge {% if log.status == 'success' %}bg-success{% else %}bg-danger{% endif %}">
                             {{ log.status }}
                         </span>
                     </td>
-                    <td><pre class="mb-0"><code>{{ log.output }}</code></pre></td>
+                    <td>
+                        <div class="log-output-container">
+                            <pre class="mb-0"><code>{{ log.output }}</code></pre>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
