@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Cisco Devices</h2>
+    <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Search devices..." aria-label="Search">
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Hostname <i class="fas fa-info-circle" title="Device hostname"></i></th>
+                    <th>IP <i class="fas fa-info-circle" title="Device IP address"></i></th>
+                    <th>Group <i class="fas fa-info-circle" title="Device group"></i></th>
+                    <th>Status <i class="fas fa-info-circle" title="Device status"></i></th>
+                    <th>Last Seen <i class="fas fa-info-circle" title="Last seen timestamp"></i></th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device in devices %}
+                <tr>
+                    <td>{{ device.hostname }}</td>
+                    <td>{{ device.ip }}</td>
+                    <td>{{ device.group }}</td>
+                    <td>{{ device.status }}</td>
+                    <td>{{ device.last_seen }}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm">Edit</button>
+                        <button class="btn btn-secondary btn-sm">Push Config</button>
+                        <button class="btn btn-danger btn-sm">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

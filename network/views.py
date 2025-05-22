@@ -1,14 +1,15 @@
 import logging
+
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.shortcuts import render, redirect
-from django.contrib import messages
+from django.shortcuts import render
 from nornir.core.filter import F
+
 from core.nornir_init import init_nornir
 from core.tasks import save_config, show_ip
+
 from .forms import TaskForm
-from django.contrib.auth.decorators import login_required
-from .models import TaskLog, NetworkDevice
-from django.db.models import Max
+from .models import NetworkDevice, TaskLog
 
 logger = logging.getLogger(__name__)
 
@@ -140,3 +141,15 @@ def dashboard_view(request):
     }
 
     return render(request, "dashboard.html", context)
+
+
+@login_required
+def device_list_view(request):
+    """Display a list of network devices."""
+    devices = NetworkDevice.objects.all().order_by("hostname")
+    paginator = Paginator(devices, 10)
+    page_number = request.GET.get("page")
+    device_list = paginator.get_page(page_number)
+    return render(
+        request, "device_list.html", {"devices": device_list, "page_obj": device_list}
+    )
