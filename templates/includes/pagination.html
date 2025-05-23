@@ -1,38 +1,38 @@
 <nav aria-label="Page navigation">
-  <ul class="pagination justify-content-center">
+  <ul class="flex justify-center">
     {% if page_obj.has_previous %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-          <span aria-hidden="true">&laquo;</span>
+      <li>
+        <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-l-md text-gray-700 bg-white hover:bg-gray-50" aria-label="Previous">
+          <span aria-hidden="true">&laquo; Previous</span>
         </a>
       </li>
     {% else %}
-      <li class="page-item disabled">
-        <span class="page-link">&laquo;</span>
+      <li>
+        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-l-md text-gray-500 bg-gray-200 cursor-not-allowed">&laquo; Previous</span>
       </li>
     {% endif %}
 
     {% for num in page_obj.paginator.page_range %}
       {% if page_obj.number == num %}
-        <li class="page-item active">
-          <span class="page-link">{{ num }}</span>
+        <li>
+          <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium text-white bg-blue-500 hover:bg-blue-500">{{ num }}</span>
         </li>
       {% else %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        <li>
+          <a href="?page={{ num }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{{ num }}</a>
         </li>
       {% endif %}
     {% endfor %}
 
     {% if page_obj.has_next %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-          <span aria-hidden="true">&raquo;</span>
+      <li>
+        <a href="?page={{ page_obj.next_page_number }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-gray-700 bg-white hover:bg-gray-50" aria-label="Next">
+          <span aria-hidden="true">Next &raquo;</span>
         </a>
       </li>
     {% else %}
-      <li class="page-item disabled">
-        <span class="page-link">&raquo;</span>
+      <li>
+        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-gray-500 bg-gray-200 cursor-not-allowed">Next &raquo;</span>
       </li>
     {% endif %}
   </ul>

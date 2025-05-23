@@ -1,27 +1,27 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
-    <h2 class="mb-4">Network Configuration Task</h2>
-    <form method="post" class="card p-4">
+<div class="max-w-4xl mx-auto">
+    <h2 class="text-2xl font-bold mb-6">Network Configuration Task</h2>
+    <form method="post" class="bg-white shadow-md rounded-lg p-6">
         {% csrf_token %}
 
-        <div class="mb-3">
-            <label for="{{ form.task_type.id_for_label }}" class="form-label">{{ form.task_type.label }}</label>
+        <div class="mb-4">
+            <label for="{{ form.task_type.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">{{ form.task_type.label }}</label>
             {{ form.task_type }}
         </div>
 
-        <div class="mb-3" id="custom-command-div" style="display: none;">
-            <label for="{{ form.custom_command.id_for_label }}" class="form-label">{{ form.custom_command.label }}</label>
+        <div class="mb-4" id="custom-command-div" style="display: none;">
+            <label for="{{ form.custom_command.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">{{ form.custom_command.label }}</label>
             {{ form.custom_command }}
         </div>
 
-        <div class="mb-3">
-            <label for="{{ form.devices.id_for_label }}" class="form-label">{{ form.devices.label }}</label>
+        <div class="mb-4">
+            <label for="{{ form.devices.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">{{ form.devices.label }}</label>
             {{ form.devices }}
         </div>
 
-        <button type="submit" class="btn btn-primary">
+        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
             Execute Task
         </button>
     </form>
@@ -47,21 +47,21 @@
     </script>
 
     {% if error_message %}
-    <div class="mt-4 alert alert-danger">
+    <div class="mt-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
         {{ error_message }}
     </div>
     {% endif %}
 
     {% if execution_output %}
-    <div class="mt-4 card">
-        <div class="card-header">Command Execution Output</div>
-        <div class="card-body">
+    <div class="mt-6 bg-white shadow-md rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200 font-bold">Command Execution Output</div>
+        <div class="p-6">
             {% for host, result in execution_output.items %}
-            <div class="mb-3">
-                <h5 class="{% if result.status == 'success' %}text-success{% else %}text-danger{% endif %}">
+            <div class="mb-4">
+                <h5 class="text-lg font-semibold {% if result.status == 'success' %}text-green-600{% else %}text-red-600{% endif %}">
                     {{ host }} ({{ result.status }})
                 </h5>
-                <pre class="bg-light p-3">{{ result.output }}</pre>
+                <pre class="bg-gray-100 p-4 rounded overflow-auto text-sm">{{ result.output }}</pre>
             </div>
             {% endfor %}
         </div>
