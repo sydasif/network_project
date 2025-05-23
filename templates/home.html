@@ -2,17 +2,21 @@
 {% load static %}
 {% block content %}
 <div class="max-w-full mx-auto mt-4 px-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-            <div class="bg-white shadow-md rounded-lg p-6">
-                <h2 class="text-xl font-bold mb-4"><a href="{% url 'network_task' %}" class="text-blue-600 hover:underline">Network Task</a></h2>
-            </div>
-        </div>
-        <div>
-            <div class="bg-white shadow-md rounded-lg p-6">
-                <h2 class="text-xl font-bold mb-4"><a href="{% url 'execution_logs' %}" class="text-blue-600 hover:underline">Execution Logs</a></h2>
-                </div>
-            </div>
-        </div>
+    <h1 class="text-2xl font-bold mb-6">Welcome to Network Automation</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <a href="{% url 'device_list' %}" class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-center text-xl">
+            Devices
+        </a>
+        <a href="{% url 'network_task' %}" class="block bg-green-500 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg text-center text-xl">
+            Configuration Tasks
+        </a>
+        <a href="{% url 'execution_logs' %}" class="block bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-4 px-6 rounded-lg text-center text-xl">
+            Execution Logs
+        </a>
+        <a href="{% url 'dashboard' %}" class="block bg-purple-500 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-lg text-center text-xl">
+            Dashboard
+        </a>
     </div>
+</div>
 {% endblock %}
