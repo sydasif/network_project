@@ -22,6 +22,7 @@ class TaskLog(models.Model):
         max_length=20, choices=[("success", "Success"), ("failure", "Failure")]
     )
     timestamp = models.DateTimeField(auto_now_add=True)
+    custom_command = models.TextField(null=True, blank=True)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="task_logs", null=True
     )

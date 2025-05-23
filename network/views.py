@@ -3,13 +3,14 @@ import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from datetime import timedelta
 from django.shortcuts import get_object_or_404, redirect, render
 from nornir.core.filter import F
 
 from core.nornir_init import init_nornir
-from core.tasks import save_config, show_ip
+from core.tasks import save_config, show_ip, run_custom_command
 
-from .forms import DeviceForm, TaskForm
+from .forms import DeviceForm, TaskForm, TaskLogFilterForm
 from .models import NetworkDevice, TaskLog
 
 logger = logging.getLogger(__name__)
@@ -23,10 +24,11 @@ def home_view(request):
 TASK_MAP = {
     "show_ip": show_ip,
     "save_config": save_config,
+    "custom_command": run_custom_command,
 }
 
 
-def process_task_result(result, task_type, user):
+def process_task_result(result, task_type, user, custom_command=None):
     """Helper function to process task results and create logs."""
     execution_output = {}
 
@@ -43,6 +45,7 @@ def process_task_result(result, task_type, user):
             output=output,
             status=status,
             user=user,
+            custom_command=custom_command if task_type == "custom_command" else None,
         )
 
         if task_result.failed:
@@ -65,14 +68,20 @@ def task_view(request):
         if form.is_valid():
             task_type = form.cleaned_data["task_type"]
             selected_devices = form.cleaned_data["devices"]
+            custom_command = form.cleaned_data.get("custom_command")
             task_func = TASK_MAP[task_type]
 
             try:
                 subset = (
                     nr.filter(F(name__in=selected_devices)) if selected_devices else nr
                 )
-                result = subset.run(task=task_func)
-                execution_output = process_task_result(result, task_type, request.user)
+                if task_type == "custom_command":
+                    result = subset.run(task=task_func, command=custom_command)
+                else:
+                    result = subset.run(task=task_func)
+                execution_output = process_task_result(
+                    result, task_type, request.user, custom_command
+                )
             except Exception as e:
                 error_message = str(e)
                 logger.exception(f"Error executing task {task_type}: {e}")
@@ -92,12 +101,40 @@ def task_view(request):
 
 @login_required
 def execution_logs(request):
-    tasklogs_list = TaskLog.objects.filter(user=request.user).order_by("-timestamp")
+    tasklogs_list = TaskLog.objects.filter(user=request.user)
+    form = TaskLogFilterForm(request.GET or None)
+
+    if form.is_valid():
+        device_name = form.cleaned_data.get("device_name")
+        task_type = form.cleaned_data.get("task_type")
+        status = form.cleaned_data.get("status")
+        start_date = form.cleaned_data.get("start_date")
+        end_date = form.cleaned_data.get("end_date")
+
+        if device_name:
+            tasklogs_list = tasklogs_list.filter(device_name=device_name)
+        if task_type:
+            tasklogs_list = tasklogs_list.filter(task_type=task_type)
+        if status:
+            tasklogs_list = tasklogs_list.filter(status=status)
+        if start_date:
+            tasklogs_list = tasklogs_list.filter(timestamp__gte=start_date)
+        if end_date:
+            # Add one day to the end_date to include the entire day
+            tasklogs_list = tasklogs_list.filter(
+                timestamp__lt=end_date + timedelta(days=1)
+            )
+
+    tasklogs_list = tasklogs_list.order_by("-timestamp")
+
     paginator = Paginator(tasklogs_list, 10)
     page_number = request.GET.get("page")
     tasklogs = paginator.get_page(page_number)
+
     return render(
-        request, "execution_logs.html", {"tasklogs": tasklogs, "page_obj": tasklogs}
+        request,
+        "execution_logs.html",
+        {"tasklogs": tasklogs, "page_obj": tasklogs, "form": form},
     )
 
 

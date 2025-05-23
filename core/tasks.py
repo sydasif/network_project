@@ -31,3 +31,16 @@ def save_config(task: Task) -> Result:
     except Exception as e:
         logger.error(f"Error saving config on {task.host.name}: {str(e)}")
         return Result(host=task.host, result=str(e), failed=True)
+
+
+def run_custom_command(task: Task, command: str) -> Result:
+    """Execute a custom command on device."""
+    try:
+        result = task.run(task=netmiko_send_command, command_string=command)
+        logger.info(f"Successfully executed command '{command}' on {task.host.name}")
+        return Result(host=task.host, result=result.result)
+    except Exception as e:
+        logger.error(
+            f"Error executing command '{command}' on {task.host.name}: {str(e)}"
+        )
+        return Result(host=task.host, result=str(e), failed=True)

@@ -7,13 +7,44 @@
         {% csrf_token %}
 
         <div class="mb-3">
-            {{ form.as_p }}
+            <label for="{{ form.task_type.id_for_label }}" class="form-label">{{ form.task_type.label }}</label>
+            {{ form.task_type }}
+        </div>
+
+        <div class="mb-3" id="custom-command-div" style="display: none;">
+            <label for="{{ form.custom_command.id_for_label }}" class="form-label">{{ form.custom_command.label }}</label>
+            {{ form.custom_command }}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.devices.id_for_label }}" class="form-label">{{ form.devices.label }}</label>
+            {{ form.devices }}
         </div>
 
         <button type="submit" class="btn btn-primary">
-            Execute Configuration
+            Execute Task
         </button>
     </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const taskTypeSelect = document.getElementById('{{ form.task_type.id_for_label }}');
+            const customCommandDiv = document.getElementById('custom-command-div');
+
+            function toggleCustomCommand() {
+                if (taskTypeSelect.value === 'custom_command') {
+                    customCommandDiv.style.display = 'block';
+                } else {
+                    customCommandDiv.style.display = 'none';
+                }
+            }
+
+            taskTypeSelect.addEventListener('change', toggleCustomCommand);
+
+            // Initial call to set the correct state on page load
+            toggleCustomCommand();
+        });
+    </script>
 
     {% if error_message %}
     <div class="mt-4 alert alert-danger">

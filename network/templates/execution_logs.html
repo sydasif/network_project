@@ -2,6 +2,31 @@
 {% block content %}
 <div class="container mt-4">
     <h2 class="mb-4">Execution Logs</h2>
+
+    <form method="get" class="form-inline mb-4">
+        <div class="form-group mr-2">
+            {{ form.device_name.label_tag }}
+            {{ form.device_name }}
+        </div>
+        <div class="form-group mr-2">
+            {{ form.task_type.label_tag }}
+            {{ form.task_type }}
+        </div>
+        <div class="form-group mr-2">
+            {{ form.status.label_tag }}
+            {{ form.status }}
+        </div>
+        <div class="form-group mr-2">
+            {{ form.start_date.label_tag }}
+            {{ form.start_date }}
+        </div>
+        <div class="form-group mr-2">
+            {{ form.end_date.label_tag }}
+            {{ form.end_date }}
+        </div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+
     <div class="table-responsive">
         <table class="table table-striped">
             <thead>
@@ -41,19 +66,19 @@
         <ul class="pagination justify-content-center">
             {% if page_obj.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{ request.GET.urlencode|slice:'4:' }}">&laquo;</a>
             </li>
             {% endif %}
 
             {% for num in page_obj.paginator.page_range %}
             <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                <a class="page-link" href="?page={{ num }}{{ request.GET.urlencode|slice:'4:' }}">{{ num }}</a>
             </li>
             {% endfor %}
 
             {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{{ request.GET.urlencode|slice:'4:' }}">&raquo;</a>
             </li>
             {% endif %}
         </ul>
